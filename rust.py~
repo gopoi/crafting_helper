@@ -9,7 +9,10 @@ class Item(object):
     
     def __str__(self):
         return self.name
- 	
+        
+    def __iter__(self):
+        for item in self.item_list:
+            pass
     def is_basic_item(self):
         return not self.item_list
                 
