@@ -1,5 +1,7 @@
-from collections import defaultdict
+from collections import OrderedDict
 from collections import Counter
+import logging
+import json
 
 class Item(object):
     def __init__(self, name, item_list=(), yield_amount=1):
@@ -18,17 +20,54 @@ class Item(object):
         items[self.name] = self.yield_amount
         for item, amount in self.item_list:
             sub_items, sub_yield_amount = item.get_items()
-            items += {key: value * (amount / sub_yield_amount) for key, value in sub_items.items()}
+            items += {key: value * (amount / sub_yield_amount) 
+            for key, value in sub_items.items()}
         return items, self.yield_amount
 
 class ItemCollection(object):
-    def __init__(self, name, collection=None):
+    def __init__(self, filename=None, name=None, collection=None):
         self.name = name
-        if not collection:
-            self.collection = {}
+        if not collection and not filename:
+            raise ValueError("collection or filename must be supplied")
+        elif not collection:
+            self.collection = OrderedDict()
         else:
             self.collection = collection
-
+        if filename:
+            self.import_collection_file(filename)
+   
+    def __iter__(self):
+        yield from self.collection.items()
+    
+    def import_collection_file(self, filename):
+        with open(filename, 'r') as file:
+            item_collection = json.load(file, object_pairs_hook=OrderedDict)
+        
+        if {'name', 'version', 'items'} <= set(item_collection):           
+            self.version = item_collection['version']
+            self.name = item_collection['name']
+            for item_name, item in item_collection['items'].items():
+                if item_name in self.collection:
+                    logging.warning("Ovewriting item: {} already present in collection".format(item_name))
+                if not item:
+                    self.collection[item_name] = Item(item_name)
+                else:
+                    yield_amount = 1
+                    sub_item_list = []
+                    for sub_item_name, sub_yield_amount in item.items():
+                        if sub_item_name == item_name:
+                            yield_amount = sub_yield_amount
+                        else:
+                            if sub_item_name in self.collection:
+                                sub_item_list.append((self.collection[sub_item_name], sub_yield_amount))
+                            else:
+                                raise ValueError("Trying to reference undeclared item: {}".format(sub_item_name))
+                    self.collection[item_name] = Item(item_name, item_list=sub_item_list, yield_amount=yield_amount)
+        else:
+            raise ValueError("name, version and items must\
+ be present in json item collection")
+        
+        
     def add_item(self, item):
         self.collection[item.name] = item
         
@@ -36,14 +75,4 @@ class ItemCollection(object):
         if not self.collection[item_name]:
             pass
             
-charcoal=Item('charcoal')
-sulfur=Item('sulfur')
-
-cloth=Item('cloth')
-metal=Item('metal fragments')
-animal_fat=Item('animal fat')
-low_grade_fuel=Item('low grade fuel', ((cloth, 1), (animal_fat, 3)), yield_amount=4)
-gunpowder=Item('gunpowder', ((sulfur, 20), (charcoal, 30)), yield_amount=10)
-explosives=Item('exlosives', ((gunpowder, 50), (low_grade_fuel, 3), (sulfur, 10), (metal, 10)))
-timed_explosives=Item('timed explosives', ((explosives, 20), (cloth, 5)))
-
+i = ItemCollection(filename="rust.json")

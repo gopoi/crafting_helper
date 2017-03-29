@@ -1,0 +1,15 @@
+{
+    "name": "Rust",
+    "version": "2017-03-27",
+    "items":  {
+            "charcoal": null,
+            "sulfur": null,
+            "cloth": null,
+            "animal fat": null,
+            "metal": null,
+            "gunpowder": {"gunpowder":10, "charcoal": 30, "sulfur": 20},
+            "low grade fuel": {"cloth": 1, "animal fat": 3,"low grade fuel": 4},
+            "explosives": {"gunpowder": 50, "low grade fuel": 3, "sulfur": 10, "metal": 10},
+            "timed_explosives": {"explosives": 20, "cloth": 5}
+            }
+}
