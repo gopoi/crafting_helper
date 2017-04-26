@@ -3,7 +3,9 @@ from collections import Counter
 import logging
 import json
 
+
 class Item(object):
+
     def __init__(self, name, item_list=(), yield_amount=1):
         self.item_list = item_list
         self.name = name
@@ -11,7 +13,7 @@ class Item(object):
     
     def __str__(self):
         return self.name
- 	
+
     def is_basic_item(self):
         return not self.item_list
                 
@@ -24,7 +26,9 @@ class Item(object):
             for key, value in sub_items.items()}
         return items, self.yield_amount
 
+
 class ItemCollection(object):
+
     def __init__(self, filename=None, name=None, collection=None):
         self.name = name
         if not collection and not filename:
@@ -48,7 +52,7 @@ class ItemCollection(object):
             self.name = item_collection['name']
             for item_name, item in item_collection['items'].items():
                 if item_name in self.collection:
-                    logging.warning("Ovewriting item: {} already present in collection".format(item_name))
+                    logging.warning("Overwriting item: {} already present in collection".format(item_name))
                 if not item:
                     self.collection[item_name] = Item(item_name)
                 else:
@@ -66,13 +70,14 @@ class ItemCollection(object):
         else:
             raise ValueError("name, version and items must\
  be present in json item collection")
-        
-        
+
     def add_item(self, item):
         self.collection[item.name] = item
         
     def get_materials(self, item_name, multiplier=1):
         if not self.collection[item_name]:
             pass
-            
-i = ItemCollection(filename="rust.json")
+
+
+if __name__ == '__main__':
+    i = ItemCollection(filename="rust.json")
